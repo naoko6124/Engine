@@ -2,6 +2,7 @@
 #include "pch.hpp"
 #include "Entity.hpp"
 #include "Bone.hpp"
+#include "Animation.hpp"
 
 namespace Engine
 {
@@ -85,6 +86,11 @@ namespace Engine
             glBindTexture(GL_TEXTURE_2D, 0);
             stbi_image_free(data);
         }
+        void ApplyAnimation(Animation animation, float time)
+        {
+            float cuttime = time - floor(time / animation.length) * animation.length;
+            ApplyAnimationOnBone(root, animation, cuttime);
+        }
         void CalculateBoneTransform()
         {
             CalculateBone(root, glm::mat4(1));
@@ -102,9 +108,34 @@ namespace Engine
     private:
         void CalculateBone(Bone& bone, glm::mat4 parentTransform)
         {
-            bone.finalTransform = parentTransform * bone.offset.GetTransformationMatrix() * bone.transform.GetTransformationMatrix() * glm::inverse(bone.offset.GetTransformationMatrix());
+            bone.finalTransform = parentTransform *
+            bone.offset.GetTransformationMatrix() *
+            bone.transform.GetTransformationMatrix() *
+            glm::inverse(bone.offset.GetTransformationMatrix());
+
             for (Bone& child : bone.children)
                 CalculateBone(child, bone.finalTransform);
+        }
+        void ApplyAnimationOnBone(Bone& bone, Animation animation, float time)
+        {
+            auto bonekey = animation.GetBoneKey(bone.name);
+            if (bonekey != nullptr)
+            {
+                int index = 0;
+                Animation::Keyframe kf = bonekey->keyframes[index];
+                while (index < bonekey->keyframes.size())
+                {
+                    if (time < kf.time)
+                    {
+                        bone.transform = Animation::Interpolate(kf, bonekey->keyframes[index - 1], time);
+                        break;
+                    }
+                    index++;
+                    kf = bonekey->keyframes[index];
+                }
+            }
+            for (Bone& child : bone.children)
+                ApplyAnimationOnBone(child, animation, time);
         }
     private:
         unsigned int vertexArray;

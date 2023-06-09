@@ -65,6 +65,19 @@ namespace Engine
             b.transform.rotation.z = 0;
             mesh.root.children.push_back(b);
 
+            Animation anim;
+            anim.length = 4.0f;
+            anim.bonekeys.push_back(
+                Animation::BoneKey(
+                    "Teste",
+                    {
+                        Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, 30.0f), glm::vec3(1)), 0.0f),
+                        Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, -30.0f), glm::vec3(1)), 2.0f),
+                        Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, 30.0f), glm::vec3(1)), 4.0f)
+                    }
+                )
+            );
+
             // Game Loop
             while (window.IsRunning())
             {
@@ -84,12 +97,21 @@ namespace Engine
                 {
                     mesh.root.children[0].transform.rotation.z -= 1;
                 }
+                if (window.GetKeyDown(GLFW_KEY_LEFT))
+                {
+                    mesh.root.transform.rotation.z += 1;
+                }
+                if (window.GetKeyDown(GLFW_KEY_RIGHT))
+                {
+                    mesh.root.transform.rotation.z -= 1;
+                }
 
                 // Setting the Camera
                 shader.UploadMat4("camera", camera.GetCameraMatrix());
 
                 // Rendering Mesh
                 shader.UploadMat4("model", mesh.transform.GetTransformationMatrix());
+                mesh.ApplyAnimation(anim, glfwGetTime());
                 mesh.CalculateBoneTransform();
                 shader.UploadBones(mesh.root);
                 mesh.Render();

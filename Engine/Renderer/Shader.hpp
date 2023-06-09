@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.hpp"
 #include "Bone.hpp"
+#include "Core/Logger.hpp"
 
 namespace Engine
 {
@@ -56,7 +57,6 @@ namespace Engine
     private:
         void UploadBone(Bone bone)
         {
-            std::cout << boneIndex << ". " << bone.name << ": " << glm::to_string(bone.finalTransform) << std::endl;
             UploadMat4("bones[" + std::to_string(boneIndex) + "]", bone.finalTransform);
             boneIndex++;
             for (Bone child : bone.children)

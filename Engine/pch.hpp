@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdarg>
 #include <chrono>
+#include <cmath>
 #include <ctime>
 #include <vector>
 #include <fstream>

@@ -6,6 +6,13 @@ namespace Engine
     class Transform
     {
     public:
+        Transform() {}
+        Transform(glm::vec3 p, glm::vec3 r, glm::vec3 s)
+        {
+            position = p;
+            rotation = r;
+            scale = s;
+        }
         glm::mat4 GetTransformationMatrix()
         {
             glm::mat4 m_scale = glm::scale(glm::mat4(1), scale);
