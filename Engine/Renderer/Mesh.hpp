@@ -13,6 +13,7 @@ namespace Engine
             glm::vec3 normal;
             glm::vec2 uv;
 
+            Vertex() {}
             Vertex(glm::vec3 p, glm::vec3 n, glm::vec2 u)
             {
                 position = p;
@@ -58,10 +59,8 @@ namespace Engine
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
             glDeleteBuffers(1, &indexBuffer);
         }
-        void SetTexture(const char* path)
+        void SetTexture(const char* data, int width, int height, int channels)
         {
-            int width, height, channels;
-            unsigned char* data = stbi_load(path, &width, &height, &channels, 0);
             glGenTextures(1, &texture);
             glBindTexture(GL_TEXTURE_2D, texture);
             if (channels == 4)
@@ -74,7 +73,6 @@ namespace Engine
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glBindTexture(GL_TEXTURE_2D, 0);
-            stbi_image_free(data);
         }
         void Render()
         {

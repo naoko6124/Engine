@@ -31,10 +31,20 @@ namespace Engine
         {
             Transform result;
             float fulldistance = abs(t2.time - t1.time);
-            float t1distance = abs(t1.time - time);
-            float t2distance = abs(t2.time - time);
-            result.rotation.z = t1.transform.rotation.z * (t2distance/fulldistance)
-                              + t2.transform.rotation.z * (t1distance/fulldistance);
+            float t2p = abs(t1.time - time)/fulldistance;
+            float t1p = abs(t2.time - time)/fulldistance;
+            result.position.x = t1.transform.position.x * t1p
+                              + t2.transform.position.x * t2p;
+            result.position.y = t1.transform.position.y * t1p
+                              + t2.transform.position.y * t2p;
+            result.position.z = t1.transform.position.z * t1p
+                              + t2.transform.position.z * t2p;
+            result.rotation.x = t1.transform.rotation.x * t1p
+                              + t2.transform.rotation.x * t2p;
+            result.rotation.y = t1.transform.rotation.y * t1p
+                              + t2.transform.rotation.y * t2p;
+            result.rotation.z = t1.transform.rotation.z * t1p
+                              + t2.transform.rotation.z * t2p;
             return result;
         }
     public:
