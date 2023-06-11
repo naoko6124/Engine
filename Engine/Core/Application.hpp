@@ -1,4 +1,5 @@
 #pragma once
+#include "pch.hpp"
 #include "Logger.hpp"
 #include "Window.hpp"
 #include "Renderer/Shader.hpp"
@@ -22,16 +23,17 @@ namespace Engine
             
             // Loading Shaders
             shader.Init();
-            // auto vertexShader = Assets::LoadFile("builtin/SkinnedMesh.vsh");
-            // auto fragmentShader = Assets::LoadFile("builtin/SkinnedMesh.fsh");
-            auto vertexShader = Assets::LoadFile("builtin/TexturedMesh.vsh");
-            auto fragmentShader = Assets::LoadFile("builtin/TexturedMesh.fsh");
+            auto vertexShader = Assets::LoadFile("builtin/SkinnedMesh.vsh");
+            auto fragmentShader = Assets::LoadFile("builtin/SkinnedMesh.fsh");
+            // auto vertexShader = Assets::LoadFile("builtin/TexturedMesh.vsh");
+            // auto fragmentShader = Assets::LoadFile("builtin/TexturedMesh.fsh");
             shader.LoadVS(vertexShader);
             shader.LoadFS(fragmentShader);
 
             // Creating the camera
             Camera camera;
-            camera.transform.position.z = 600;
+            camera.transform.position.z = 400;
+            camera.transform.position.y = 100;
 
             // Skinned Mesh Test
             // SkinnedMesh mesh;
@@ -60,7 +62,11 @@ namespace Engine
             //     6, 7, 5
             // };
             // mesh.SetIndices(indices);
-            // mesh.SetTexture("builtin/tex.png");
+            // int width, height, channels;
+            // unsigned char* data = stbi_load("builtin/tex.png", &width, &height, &channels, 0);
+            // mesh.SetTexture((const char*)data, width, height, channels);
+            // stbi_image_free(data);
+
             // mesh.root.name = "Root";
             // Bone b;
             // b.name = "Teste";
@@ -68,31 +74,60 @@ namespace Engine
             // b.transform.rotation.z = 0;
             // mesh.root.children.push_back(b);
 
-            // Animation anim;
-            // anim.length = 2.0f;
-            // anim.bonekeys.push_back(
-            //     Animation::BoneKey(
-            //         "Teste",
-            //         {
-            //             Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, 30.0f), glm::vec3(1)), 0.0f),
-            //             Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, -30.0f), glm::vec3(1)), 1.0f),
-            //             Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, 30.0f), glm::vec3(1)), 2.0f)
-            //         }
-            //     )
-            // );
-            // anim.bonekeys.push_back(
-            //     Animation::BoneKey(
-            //         "Root",
-            //         {
-            //             Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, -30.0f), glm::vec3(1)), 0.0f),
-            //             Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, 30.0f), glm::vec3(1)), 1.0f),
-            //             Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, -30.0f), glm::vec3(1)), 2.0f)
-            //         }
-            //     )
-            // );
+            Animation anim;
+            anim.length = 3.0f;
+            anim.bonekeys.push_back(
+                Animation::BoneKey(
+                    "Thigh.L",
+                    {
+                        Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, -50), glm::vec3(1)), 0.0f),
+                        Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, 30), glm::vec3(1)), 1.0f),
+                        Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, -50), glm::vec3(1)), 3.0f)
+                    }
+                )
+            );
+            anim.bonekeys.push_back(
+                Animation::BoneKey(
+                    "Leg.L",
+                    {
+                        Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, 0), glm::vec3(1)), 0.0f),
+                        Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, 10), glm::vec3(1)), 1.5f),
+                        Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, 45), glm::vec3(1)), 2.0f),
+                        Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, 60), glm::vec3(1)), 2.5f),
+                        Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, 0), glm::vec3(1)), 3.0f)
+                    }
+                )
+            );
+            anim.bonekeys.push_back(
+                Animation::BoneKey(
+                    "Thigh.R",
+                    {
+                        Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, -30), glm::vec3(1)), 0.0f),
+                        Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, 50), glm::vec3(1)), 1.0f),
+                        Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, -30), glm::vec3(1)), 3.0f)
+                    }
+                )
+            );
+            anim.bonekeys.push_back(
+                Animation::BoneKey(
+                    "Leg.R",
+                    {
+                        Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, -10), glm::vec3(1)), 0.0f),
+                        Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, -45), glm::vec3(1)), 0.5f),
+                        Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, -60), glm::vec3(1)), 1.0f),
+                        Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, 0), glm::vec3(1)), 1.5f),
+                        Animation::Keyframe(Transform(glm::vec3(0), glm::vec3(0, 0, -10), glm::vec3(1)), 3.0f)
+                    }
+                )
+            );
 
             // Mesh Load
-            Mesh mesh = Assets::LoadMesh("../FBX2Mesh/teste.mesh");
+            // Mesh mesh = Assets::LoadMesh("../FBX2Mesh/teste.mesh");
+
+            // Skinned Mesh Load
+            SkinnedMesh mesh = Assets::LoadSkinnedMesh("../FBX2SMesh/teste.smesh");
+
+            mesh.root.transform.rotation.y = 45;
 
             // Game Loop
             while (window.IsRunning())
@@ -106,16 +141,14 @@ namespace Engine
                 if (window.GetKeyDown(GLFW_KEY_ESCAPE))
                     break;
 
-                mesh.transform.rotation.y += 1;
-
                 // Setting the Camera
                 shader.UploadMat4("camera", camera.GetCameraMatrix());
 
                 // Rendering Mesh
                 shader.UploadMat4("model", mesh.transform.GetTransformationMatrix());
-                // mesh.ApplyAnimation(anim, glfwGetTime());
-                // mesh.CalculateBoneTransform();
-                // shader.UploadBones(mesh.root);
+                mesh.ApplyAnimation(anim, glfwGetTime());
+                mesh.CalculateBoneTransform();
+                shader.UploadBones(mesh.root);
                 mesh.Render();
 
                 // Rendering to the Screen

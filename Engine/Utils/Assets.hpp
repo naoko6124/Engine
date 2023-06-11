@@ -1,6 +1,8 @@
 #pragma once
 #include "pch.hpp"
 #include "Renderer/Mesh.hpp"
+#include "Renderer/SkinnedMesh.hpp"
+#include "Renderer/Bone.hpp"
 
 namespace Engine
 {
@@ -76,32 +78,104 @@ namespace Engine
 
             delete[] data;
 
-            printf("%s, %lld\n", vname, vsize);
-            for (auto& v : vertices)
+            file.close();
+            return m;
+        }
+        static SkinnedMesh LoadSkinnedMesh(const char* path)
+        {
+            SkinnedMesh m;
+            std::ifstream file(path, std::ios::binary);
+
+            std::vector<SkinnedMesh::Vertex> vertices;
+            std::vector<unsigned int> indices;
+
+            char vname[9];
+            vname[8] = '\0';
+            size_t vsize;
+            file.read((char*)&vname, 8);
+            file.read((char*)&vsize, 8);
+            size_t vcounter = vsize;
+            while (vcounter > 0)
             {
-                printf("(%.1f, %.1f, %.1f) (%.1f, %.1f, %.1f) (%.1f, %.1f)\n",
-                    v.position.x,
-                    v.position.y,
-                    v.position.z,
-                    v.normal.x,
-                    v.normal.y,
-                    v.normal.z,
-                    v.uv.x,
-                    v.uv.y
-                );
+                SkinnedMesh::Vertex v;
+                file.read((char*)&v.position, 12);
+                file.read((char*)&v.normal, 12);
+                file.read((char*)&v.uv, 8);
+                file.read((char*)&v.bone, 16);
+                file.read((char*)&v.weight, 16);
+                vertices.push_back(v);
+                vcounter -= 64;
             }
 
-            printf("%s, %lld\n", iname, isize);
-            for (auto& i : indices)
+            m.SetVertices(vertices);
+
+            char iname[9];
+            iname[8] = '\0';
+            size_t isize;
+            file.read((char*)&iname, 8);
+            file.read((char*)&isize, 8);
+            size_t icounter = isize;
+            while (icounter > 0)
             {
-                printf("%d, ", i);
+                unsigned int i;
+                file.read((char*)&i, 4);
+                indices.push_back(i);
+                icounter -= 4;
             }
 
-            printf("\n%lld", tsize);
-            printf("\n%d, %d, %d", width, height, channels);
+            m.SetIndices(indices);
+
+            char tname[9];
+            tname[8] = '\0';
+            size_t tsize;
+            file.read((char*)&tname, 8);
+            file.read((char*)&tsize, 8);
+            int width, height, channels;
+            file.read((char*)&width, 4);
+            file.read((char*)&height, 4);
+            file.read((char*)&channels, 4);
+            char* data = new char[tsize];
+            file.read((char*)data, tsize);
+
+            m.SetTexture(data, width, height, channels);
+
+            delete[] data;
+
+            char bname[9];
+            bname[8] = '\0';
+            size_t bsize;
+            file.read((char*)&bname, 8);
+            file.read((char*)&bsize, 8);
+
+            ReadBone(m.root, file, "");
 
             file.close();
             return m;
+        }
+        static void ReadBone(Bone& bone, std::ifstream& file, std::string level)
+        {
+            std::cout << file.tellg();
+
+            char bname[13];
+            bname[12] = '\0';
+            int children;
+            file.read((char*)&bname, 12);
+            file.read((char*)&children, 4);
+            bone.name = bname;
+            file.read((char*)&bone.offset, 64);
+
+            printf("%s%s, %d\n", level.c_str(), bname, children);
+            std::cout << glm::to_string(bone.offset) << "\n";
+            level.append("-");
+
+            if (children == 0)
+                return;
+
+            bone.children.resize(children);
+            for (int i = 0; i < children; i++)
+            {
+                ReadBone(bone.children[i], file, level);
+            }
         }
     };
 };

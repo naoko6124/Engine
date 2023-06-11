@@ -10,6 +10,6 @@ namespace Engine
         std::string name;
         glm::mat4 finalTransform;
         std::vector<Bone> children;
-        Transform offset;
+        glm::mat4 offset;
     };
 }

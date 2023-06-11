@@ -32,3 +32,8 @@ project (FBX2Mesh)
 file (GLOB_RECURSE FBX2MeshSrc FBX2Mesh/**.*)
 add_executable (FBX2Mesh ${FBX2MeshSrc})
 target_link_libraries (FBX2Mesh PUBLIC assimp glm stb)
+
+project (FBX2SMesh)
+file (GLOB_RECURSE FBX2SMeshSrc FBX2SMesh/**.*)
+add_executable (FBX2SMesh ${FBX2SMeshSrc})
+target_link_libraries (FBX2SMesh PUBLIC assimp glm stb)
