@@ -71,7 +71,6 @@ namespace Engine
             file.read((char*)&height, 4);
             file.read((char*)&channels, 4);
             char* data = new char[tsize];
-            printf("%lld\n", tsize);
             file.read((char*)data, tsize);
 
             m.SetTexture(data, width, height, channels);
@@ -164,7 +163,6 @@ namespace Engine
             bone.name = bname;
             file.read((char*)&bone.offset, 64);
 
-            printf("%s%s, %d\n", level.c_str(), bname, children);
             std::cout << glm::to_string(bone.offset) << "\n";
             level.append("-");
 

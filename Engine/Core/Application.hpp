@@ -22,57 +22,27 @@ namespace Engine
             window.SetEventCallback(std::bind(&Application::OnEvent, this, std::placeholders::_1));
             
             // Loading Shaders
-            shader.Init();
-            auto vertexShader = Assets::LoadFile("builtin/SkinnedMesh.vsh");
-            auto fragmentShader = Assets::LoadFile("builtin/SkinnedMesh.fsh");
-            // auto vertexShader = Assets::LoadFile("builtin/TexturedMesh.vsh");
-            // auto fragmentShader = Assets::LoadFile("builtin/TexturedMesh.fsh");
-            shader.LoadVS(vertexShader);
-            shader.LoadFS(fragmentShader);
+            Shader skinnedShader;
+            {
+                skinnedShader.Init();
+                auto vertexShader = Assets::LoadFile("builtin/SkinnedMesh.vsh");
+                auto fragmentShader = Assets::LoadFile("builtin/SkinnedMesh.fsh");
+                skinnedShader.LoadVS(vertexShader);
+                skinnedShader.LoadFS(fragmentShader);
+            }
+            Shader shader;
+            {
+                shader.Init();
+                auto vertexShader = Assets::LoadFile("builtin/TexturedMesh.vsh");
+                auto fragmentShader = Assets::LoadFile("builtin/TexturedMesh.fsh");
+                shader.LoadVS(vertexShader);
+                shader.LoadFS(fragmentShader);
+            }
 
             // Creating the camera
             Camera camera;
             camera.transform.position.z = 400;
             camera.transform.position.y = 100;
-
-            // Skinned Mesh Test
-            // SkinnedMesh mesh;
-            // std::vector<SkinnedMesh::Vertex> vertices = 
-            // {
-            //     SkinnedMesh::Vertex({-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, { 0, 0, 0, 0 }, {1.0f, 0.0f, 0.0f, 0.0f}),
-            //     SkinnedMesh::Vertex({ 0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 0.0f}, { 0, 0, 0, 0 }, {1.0f, 0.0f, 0.0f, 0.0f}),
-
-            //     SkinnedMesh::Vertex({ 0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, { 0, 1, 0, 0 }, {1.0f, 1.0f, 0.0f, 0.0f}),
-            //     SkinnedMesh::Vertex({-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f}, { 0, 1, 0, 0 }, {1.0f, 1.0f, 0.0f, 0.0f}),
-                
-            //     SkinnedMesh::Vertex({ 0.5f,  1.5f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 0.0f}, { 1, 0, 0, 0 }, {1.0f, 1.0f, 0.0f, 0.0f}),
-            //     SkinnedMesh::Vertex({-0.5f,  1.5f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f}, { 1, 0, 0, 0 }, {1.0f, 1.0f, 0.0f, 0.0f}),
-
-            //     SkinnedMesh::Vertex({ 0.5f,  2.5f, 0.0f}, {0.0f, 0.0f, 0.0f}, {1.0f, 1.0f}, { 1, 0, 0, 0 }, {1.0f, 0.0f, 0.0f, 0.0f}),
-            //     SkinnedMesh::Vertex({-0.5f,  2.5f, 0.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f}, { 1, 0, 0, 0 }, {1.0f, 0.0f, 0.0f, 0.0f})
-            // };
-            // mesh.SetVertices(vertices);
-            // std::vector<unsigned int> indices =
-            // {
-            //     0, 1, 2,
-            //     2, 3, 0,
-            //     3, 2, 4,
-            //     4, 5, 3,
-            //     5, 4, 6,
-            //     6, 7, 5
-            // };
-            // mesh.SetIndices(indices);
-            // int width, height, channels;
-            // unsigned char* data = stbi_load("builtin/tex.png", &width, &height, &channels, 0);
-            // mesh.SetTexture((const char*)data, width, height, channels);
-            // stbi_image_free(data);
-
-            // mesh.root.name = "Root";
-            // Bone b;
-            // b.name = "Teste";
-            // b.offset.position.y = 1;
-            // b.transform.rotation.z = 0;
-            // mesh.root.children.push_back(b);
 
             Animation anim;
             anim.length = 3.0f;
@@ -122,12 +92,17 @@ namespace Engine
             );
 
             // Mesh Load
-            // Mesh mesh = Assets::LoadMesh("../FBX2Mesh/teste.mesh");
+            Mesh tiger = Assets::LoadMesh("../FBX2Mesh/teste.mesh");
 
             // Skinned Mesh Load
-            SkinnedMesh mesh = Assets::LoadSkinnedMesh("../FBX2SMesh/teste.smesh");
+            SkinnedMesh character = Assets::LoadSkinnedMesh("../FBX2SMesh/teste.smesh");
 
-            mesh.root.transform.rotation.y = 45;
+            character.root.transform.rotation.y = 45;
+            tiger.transform.position.x = 100;
+            tiger.transform.position.y = 150;
+            tiger.transform.position.z = -400;
+            tiger.transform.scale *= 2;
+            tiger.transform.rotation.y = -30;
 
             // Game Loop
             while (window.IsRunning())
@@ -135,21 +110,25 @@ namespace Engine
                 // Getting Events, Clearing the Screen and Using the Shader
                 window.GetEvents();
                 window.Clear();
-                shader.Use();
 
                 // Commands
                 if (window.GetKeyDown(GLFW_KEY_ESCAPE))
                     break;
 
-                // Setting the Camera
-                shader.UploadMat4("camera", camera.GetCameraMatrix());
-
                 // Rendering Mesh
-                shader.UploadMat4("model", mesh.transform.GetTransformationMatrix());
-                mesh.ApplyAnimation(anim, glfwGetTime());
-                mesh.CalculateBoneTransform();
-                shader.UploadBones(mesh.root);
-                mesh.Render();
+                shader.Use();
+                shader.UploadMat4("camera", camera.GetCameraMatrix());
+                shader.UploadMat4("model", tiger.transform.GetTransformationMatrix());
+                tiger.Render();
+
+                // Rendering Skinned Mesh
+                skinnedShader.Use();
+                skinnedShader.UploadMat4("camera", camera.GetCameraMatrix());
+                skinnedShader.UploadMat4("model", character.transform.GetTransformationMatrix());
+                character.ApplyAnimation(anim, glfwGetTime());
+                character.CalculateBoneTransform();
+                skinnedShader.UploadBones(character.root);
+                character.Render();
 
                 // Rendering to the Screen
                 window.Present();
@@ -157,6 +136,7 @@ namespace Engine
 
             // Cleaning the Memory
             shader.Terminate();
+            skinnedShader.Terminate();
             window.Terminate();
         }
         void OnEvent(Event* e)
@@ -174,6 +154,5 @@ namespace Engine
         }
     private:
         Window window;
-        Shader shader;
     };
 }
