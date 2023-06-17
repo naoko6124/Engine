@@ -56,11 +56,11 @@ public:
 };
 
 void ReadBones(aiNode *node, Bone &bone, std::vector<Bone> &bones);
-void PrintBone(Bone bone, std::ofstream &file);
+void PrintBone(Bone bone, std::ofstream &file, std::string level);
 
 int main()
 {
-    const char *path = "../FBX2SMesh/untitled.fbx";
+    const char *path = "../FBX2SMesh/crate.fbx";
 
     Assimp::Importer importer;
     const aiScene *scene = importer.ReadFile(path,
@@ -147,18 +147,19 @@ int main()
         }
     }
 
-    aiMaterial *material = scene->mMaterials[0];
-    aiString texture_file;
-    material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), texture_file);
-    auto texture = scene->GetEmbeddedTexture(texture_file.C_Str());
+    // aiMaterial *material = scene->mMaterials[0];
+    // aiString texture_file;
+    // material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), texture_file);
+    // auto texture = scene->GetEmbeddedTexture(texture_file.C_Str());
+    auto texture = scene->mTextures[0];
     aiTexel *texel = texture->pcData;
 
-    aiNode *armature;
-    for (int i = 0; i < scene->mRootNode->mNumChildren; i++)
-    {
-        if (std::string(scene->mRootNode->mChildren[i]->mName.C_Str()) == "Armature")
-            armature = scene->mRootNode->mChildren[i];
-    }
+    aiNode *armature = scene->mRootNode->mChildren[1];
+    // for (int i = 0; i < scene->mRootNode->mNumChildren; i++)
+    // {
+    //     if (std::string(scene->mRootNode->mChildren[i]->mName.C_Str()) == "Armature")
+    //         armature = scene->mRootNode->mChildren[i];
+    // }
     Bone root = bones[0];
     ReadBones(armature->mChildren[0], root, bones);
 
@@ -167,18 +168,23 @@ int main()
         Animation animation;
         aiAnimation *anim = scene->mAnimations[a];
         animation.name = anim->mName.C_Str();
+        printf("%s\n", animation.name.c_str());
         for (int i = 0; i < anim->mNumChannels; i++)
         {
             aiNodeAnim *nodeAnim = anim->mChannels[i];
             Animation::BoneKey bonekey;
             bonekey.name = nodeAnim->mNodeName.C_Str();
+            printf(" %s\n", bonekey.name.c_str());
             for (int j = 0; j < nodeAnim->mNumPositionKeys; j++)
             {
                 Animation::Keyframe keyframe;
                 aiVectorKey positionKey = nodeAnim->mPositionKeys[j];
                 aiQuatKey rotationKey = nodeAnim->mRotationKeys[j];
                 aiVectorKey scaleKey = nodeAnim->mScalingKeys[j];
-                aiQuaternion quat = rotationKey.mValue;
+
+                aiQuaternion quater = rotationKey.mValue;
+                glm::quat quat = glm::quat(quater.w, quater.x, quater.y, quater.z);
+
                 glm::vec3 rotation;
                 rotation.x = atan2(2 * (quat.w * quat.x + quat.y * quat.z), 1 - 2 * (quat.x * quat.x + quat.y * quat.y));
                 rotation.y = asin(2 * (quat.w * quat.y - quat.z * quat.x));
@@ -193,6 +199,8 @@ int main()
                 keyframe.scale.x = scaleKey.mValue.x;
                 keyframe.scale.y = scaleKey.mValue.y;
                 keyframe.scale.z = scaleKey.mValue.z;
+
+                printf("  (%f, %f, %f) (%f, %f, %f, %f) - %f\n", keyframe.rotation.x, keyframe.rotation.y, keyframe.rotation.z, quat.w, quat.x, quat.y, quat.z, positionKey.mTime);
 
                 keyframe.time = positionKey.mTime;
 
@@ -247,31 +255,47 @@ int main()
     file.write(bname.c_str(), 8);
     file.write((const char *)&bsize, 8);
 
-    PrintBone(root, file);
+    PrintBone(root, file, "");
 
-    printf("%s\n", animations[1].name.c_str());
-    printf("%s\n", animations[1].bonekeys[0].name.c_str());
-    for (auto &keyframe : animations[1].bonekeys[0].keyframes)
+    std::string aname = "ANIMATIO";
+    size_t asize = animations.size();
+    file.write(aname.c_str(), 8);
+    file.write((const char *)&asize, 8);
+    for (auto& animation : animations)
     {
-        printf("(%.1f, %.1f, %.1f)(%.1f, %.1f, %.1f)(%.1f, %.1f, %.1f) - %.1f\n",
-               keyframe.position.x, keyframe.position.y, keyframe.position.z,
-               keyframe.rotation.x, keyframe.rotation.y, keyframe.rotation.z,
-               keyframe.scale.x, keyframe.scale.y, keyframe.scale.z,
-               keyframe.time);
+        file.write(animation.name.c_str(), 12);
+        size_t bnsize = animation.bonekeys.size();
+        file.write((const char*)&bnsize, 4);
+        file.write((const char*)&animation.length, 4);
+        for (auto& bonekey : animation.bonekeys)
+        {
+            file.write(bonekey.name.c_str(), 12);
+            size_t kfsize = bonekey.keyframes.size();
+            file.write((const char*)&kfsize, 4);
+            for (auto& keyframe : bonekey.keyframes)
+            {
+                file.write((const char*)&keyframe.position, 12);
+                file.write((const char*)&keyframe.rotation, 12);
+                file.write((const char*)&keyframe.scale, 12);
+                file.write((const char*)&keyframe.time, 4);
+            }
+        }
     }
 
     file.close();
 }
 
-void PrintBone(Bone bone, std::ofstream &file)
+void PrintBone(Bone bone, std::ofstream &file, std::string level)
 {
     file.write(bone.name.c_str(), 12);
     size_t childrens = bone.children.size();
     file.write((const char *)&childrens, 4);
     file.write((const char *)&bone.offset, 64);
+    printf("%s%s\n", level.c_str(), bone.name.c_str());
+    level.append("-");
     for (auto &c : bone.children)
     {
-        PrintBone(c, file);
+        PrintBone(c, file, level);
     }
 }
 

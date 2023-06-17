@@ -28,7 +28,7 @@ void ProcessMesh(aiMesh *a_mesh, const aiScene *scene)
 
 int main()
 {
-    const char *path = "../FBX2Mesh/Tiger.fbx";
+    const char *path = "../FBX2Mesh/crate.fbx";
 
     Assimp::Importer importer;
     const aiScene *scene = importer.ReadFile(path,
@@ -63,13 +63,14 @@ int main()
             indices.push_back(face.mIndices[j]);
     }
 
-    aiMaterial *material = scene->mMaterials[0];
-    aiString texture_file;
-    material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), texture_file);
-    auto texture = scene->GetEmbeddedTexture(texture_file.C_Str());
+    // aiMaterial *material = scene->mMaterials[0];
+    // aiString texture_file;
+    // material->Get(AI_MATKEY_TEXTURE(aiTextureType_DIFFUSE, 0), texture_file);
+    // auto texture = scene->GetEmbeddedTexture(texture_file.C_Str());
 
-    printf("%s\n", texture->mFilename.C_Str());
-    printf("%d, %d\n", texture->mWidth, texture->mHeight);
+    //printf("%s\n", texture->mFilename.C_Str());
+    //printf("%d, %d\n", texture->mWidth, texture->mHeight);
+    auto texture = scene->mTextures[0];
     aiTexel *texel = texture->pcData;
 
     std::ofstream file("../FBX2Mesh/teste.mesh", std::ios::binary);

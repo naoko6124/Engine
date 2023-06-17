@@ -41,8 +41,10 @@ namespace Engine
 
             // Creating the camera
             Camera camera;
-            camera.transform.position.z = 400;
-            camera.transform.position.y = 100;
+            camera.transform.position.z = 8;
+            camera.transform.position.x = 8;
+            camera.transform.position.y = 1;
+            camera.transform.rotation.y = -45;
 
             Animation anim;
             anim.length = 3.0f;
@@ -97,12 +99,12 @@ namespace Engine
             // Skinned Mesh Load
             SkinnedMesh character = Assets::LoadSkinnedMesh("../FBX2SMesh/teste.smesh");
 
-            character.root.transform.rotation.y = 45;
-            tiger.transform.position.x = 100;
-            tiger.transform.position.y = 150;
-            tiger.transform.position.z = -400;
-            tiger.transform.scale *= 2;
-            tiger.transform.rotation.y = -30;
+            //character.root.transform.rotation.y = 45;
+            //tiger.transform.position.x = 100;
+            //tiger.transform.position.y = 150;
+            //tiger.transform.position.z = -400;
+            //tiger.transform.scale *= 2;
+            //tiger.transform.rotation.y = -30;
 
             // Game Loop
             while (window.IsRunning())
@@ -119,13 +121,14 @@ namespace Engine
                 shader.Use();
                 shader.UploadMat4("camera", camera.GetCameraMatrix());
                 shader.UploadMat4("model", tiger.transform.GetTransformationMatrix());
-                tiger.Render();
+                //tiger.Render();
 
                 // Rendering Skinned Mesh
                 skinnedShader.Use();
                 skinnedShader.UploadMat4("camera", camera.GetCameraMatrix());
                 skinnedShader.UploadMat4("model", character.transform.GetTransformationMatrix());
-                character.ApplyAnimation(anim, glfwGetTime());
+                character.ApplyAnimation(character.animations[0], glfwGetTime() * 10);
+                //character.ApplyAnimation(anim, glfwGetTime());
                 character.CalculateBoneTransform();
                 skinnedShader.UploadBones(character.root);
                 character.Render();

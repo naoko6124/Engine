@@ -104,11 +104,12 @@ namespace Engine
     public:
         Bone root;
         glm::mat4 globalInverseTransform;
+        std::vector<Animation> animations;
     private:
         void CalculateBone(Bone& bone, glm::mat4 parentTransform)
         {
             bone.finalTransform = parentTransform *
-            glm::inverse(glm::mat4(1000) * bone.offset) *
+            glm::inverse(bone.offset) *
             bone.transform.GetTransformationMatrix() * 
             bone.offset;
 
